@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - WIP Input</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="screen-container">
+    <header class="topbar">
+      <h2>Panel Admin - Kelola Plan Produksi</h2>
+    </header>
+    
+    <main class="view-container">
+      <section class="dashboard-section">
+        <h3>Upload / Impor Data Excel (Plan Data)</h3>
+        <input type="file" id="excel-file-input" accept=".xlsx, .xls" />
+        <button id="btn-upload" class="btn btn-primary">Unggah Data Plan</button>
+      </section>
+
+      <section class="dashboard-section">
+        <h3>Daftar Plan Produksi</h3>
+        <div class="table-responsive">
+          <table class="data-table" id="admin-plan-table">
+            <thead>
+              <tr>
+                <th>Work Order</th>
+                <th>Operator</th>
+                <th>Bagian</th>
+                <th>No. Mesin</th>
+                <th>Tipe Lensa</th>
+                <th>Plan Qty</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
