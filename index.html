@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Penugasan Operator</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- Screen Login Token -->
+  <div id="login-screen" class="screen-container">
+    <div class="login-card">
+      <h2>Sistem Penugasan Operator</h2>
+      <p>Masukkan Token Akses Anda</p>
+      <form id="login-form">
+        <input type="text" id="token-input" placeholder="Contoh: OPT-001" required>
+        <button type="submit" class="btn btn-primary">Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Screen Utama Application -->
+  <div id="app-screen" class="screen-container hidden">
+    <!-- Header Topbar -->
+    <header class="topbar">
+      <div class="user-info">
+        <span id="user-name-display">Nama User</span>
+        <span id="user-role-badge" class="badge">ROLE</span>
+      </div>
+      <button id="logout-btn" class="btn btn-secondary btn-sm">Keluar</button>
+    </header>
+
+    <!-- Tampilan Role Operator (Mobile First) -->
+    <main id="operator-view" class="view-container hidden">
+      <div class="tab-navigation">
+        <button id="tab-wo-btn" class="tab-btn active">Penugasan Hari Ini</button>
+        <button id="tab-history-btn" class="tab-btn">Riwayat Saya</button>
+      </div>
+
+      <!-- Tab 1: List WO Penugasan -->
+      <section id="tab-wo-content" class="tab-content active">
+        <div id="wo-list-container" class="card-list">
+          <p class="loading-text">Memuat data penugasan...</p>
+        </div>
+      </section>
+
+      <!-- Tab 2: Riwayat Input Operator -->
+      <section id="tab-history-content" class="tab-content">
+        <div id="operator-history-container" class="card-list">
+          <p class="loading-text">Memuat riwayat input...</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Tampilan Role Observer (Desktop First) -->
+    <main id="observer-view" class="view-container hidden">
+      <div class="observer-header">
+        <h2>Dashboard Ketercapaian Produksi</h2>
+        
+        <!-- Filter Controls -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="filter-date">Tanggal Produksi:</label>
+            <input type="date" id="filter-date">
+          </div>
+          <div class="filter-group">
+            <label for="filter-bagian">Bagian:</label>
+            <select id="filter-bagian">
+              <option value="">-- Semua Bagian --</option>
+            </select>
+          </div>
+          <button id="btn-apply-filter" class="btn btn-primary">Terapkan Filter</button>
+        </div>
+      </div>
+
+      <!-- Summary Section -->
+      <section class="dashboard-section">
+        <h3>Ringkasan Ketercapaian (% Achievement)</h3>
+        <div class="table-responsive">
+          <table class="data-table" id="summary-table">
+            <thead>
+              <tr>
+                <th>Bagian</th>
+                <th>Tipe Lensa</th>
+                <th>Total Plan Qty</th>
+                <th>Total Actual Qty</th>
+                <th>% Ketercapaian</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Detail Log Section -->
+      <section class="dashboard-section">
+        <h3>Log Input Achievement Keseluruhan</h3>
+        <div class="table-responsive">
+          <table class="data-table" id="detail-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Work Order</th>
+                <th>Nama Operator</th>
+                <th>Bagian</th>
+                <th>No. Mesin</th>
+                <th>Tipe Lensa</th>
+                <th>Siklus</th>
+                <th>Actual Qty</th>
+                <th>Catatan Scrap</th>
+                <th>Catatan Kendala</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal Form Input Operator -->
+  <div id="wo-input-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Input Hasil Produksi</h3>
+        <button id="modal-close-btn" class="close-btn">&times;</button>
+      </div>
+      <form id="operator-input-form">
+        <input type="hidden" id="form-wo-id">
+        <input type="hidden" id="form-bagian">
+        <input type="hidden" id="form-nomor-mesin">
+        <input type="hidden" id="form-tipe-lensa">
+
+        <!-- Informational Readonly Details -->
+        <!-- Informational Readonly Details -->
+        <div class="form-info-box">
+          <p><strong>Work Order:</strong> <span id="info-wo"></span></p>
+          <p><strong>Tipe Lensa:</strong> <span id="info-lensa"></span></p>
+          <p><strong>No. Mesin:</strong> <span id="info-mesin"></span> | <strong>Plan Qty:</strong> <span id="info-plan"></span></p>
+          <p><strong>Pencapaian Saat Ini:</strong> <span id="info-progress" style="font-weight: bold; color: #2563eb;"></span></p>
+          <p><strong>Catatan Target:</strong> <span id="info-catatan-target"></span></p>
+        </div>
+
+        <!-- Input Fields -->
+        <div class="form-group">
+          <label for="input-siklus">Siklus *</label>
+          <select id="input-siklus" required>
+            <option value="SETTING SELESAI">SETTING SELESAI</option>
+            <option value="PRODUKSI">PRODUKSI</option>
+            <option value="REPAIR">REPAIR</option>
+            <option value="RWK">RWK</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="input-actual-qty">Actual Qty *</label>
+          <input type="number" id="input-actual-qty" min="0" required placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label for="input-catatan-scrap">Catatan Scrap</label>
+          <textarea id="input-catatan-scrap" rows="3" placeholder="Rincian barang scrap (opsional)..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="input-catatan-kendala">Catatan Kendala</label>
+          <textarea id="input-catatan-kendala" rows="3" placeholder="Hambatan/kendala mesin/proses (opsional)..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Batal</button>
+          <button type="submit" id="modal-submit-btn" class="btn btn-primary">Simpan Achievement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
